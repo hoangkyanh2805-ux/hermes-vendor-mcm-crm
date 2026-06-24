@@ -1,0 +1,21 @@
+Extract a short reusable marketing HOOK from this XAUUSD/gold post.
+The hook should work for our Telegram community (1-2 sentences, punchy, no emoji spam).
+
+Post:
+---
+{{post_text}}
+---
+
+Category: {{category}}
+Country: {{country_target}}
+
+Rules:
+- Focus on curiosity, pain point, or proof angle
+- Avoid copying copyrighted text verbatim — paraphrase
+- If post is noise/promo with no usable hook, return hook_extracted as empty string
+
+Respond JSON only:
+{
+  "hook_extracted": "...",
+  "content_angle": "..."
+}

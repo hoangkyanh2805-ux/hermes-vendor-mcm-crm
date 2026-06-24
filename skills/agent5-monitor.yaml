@@ -1,0 +1,127 @@
+# Agent 5 — Monitor / Operating Rhythm / SOP Bundle Packager
+# MCM Vendor — Hermes XAUUSD Growth OS v2 — Phase 8
+
+name: agent5-monitor
+version: "2.1"
+phase: phase8
+description: |
+  Agent 5 = operating rhythm của toàn Growth OS.
+  Monitor health, báo cáo founder 20:00, weekly review, đóng gói SOP bundle.
+  1 Hermes instance — KHÔNG Agent 6.
+
+roles:
+  monitor:
+    services:
+      - hermes
+      - supabase
+      - telegram
+      - twenty
+      - metabase
+      - plane
+      - activepieces
+      - apify
+      - vps
+      - github
+    tables:
+      - system_health_logs
+      - activity_logs
+      - v_purgatory_dashboard
+  operating_rhythm:
+    daily_20h:
+      command: python scripts/send_telegram_report.py founder-daily
+      template: prompts/report-founder.txt
+    weekly_review:
+      command: python scripts/send_telegram_report.py founder-daily --weekly
+      schedule: "0 9 * * 1"
+    health_poll:
+      command: python scripts/health_check.py --persist
+      schedule: "*/30 * * * *"
+  bundle_packager:
+    trigger: phase_ship_complete
+    outputs:
+      - docs/bundle-manifest.md
+      - docs/sop-ops.md
+      - docs/runbook.md
+      - docs/launch-checklist.md
+      - docs/rollback-plan.md
+
+cron:
+  - schedule: "*/30 * * * *"
+    task: health_check_persist
+    command: python scripts/health_check.py --persist
+  - schedule: "0 20 * * *"
+    task: founder_daily_report
+    command: python scripts/send_telegram_report.py founder-daily
+  - schedule: "0 9 * * 1"
+    task: weekly_review
+    command: python scripts/send_telegram_report.py founder-daily --weekly
+
+triggers:
+  - type: cron
+    schedule: "0 20 * * *"
+  - type: cron
+    schedule: "*/30 * * * *"
+  - type: cron
+    schedule: "0 9 * * 1"
+  - type: event
+    event: phase_ship_complete
+  - type: cli
+    command: python scripts/health_check.py
+
+daily_report_sections:
+  - Growth
+  - CRM funnel
+  - Content performance
+  - Apify intelligence
+  - Vendor ops
+  - System health
+  - Action items tomorrow
+
+weekly_review_outputs:
+  - top_winning_country
+  - top_winning_hook
+  - top_winning_vendor
+  - weakest_stage
+  - cost_per_join_trend
+  - content_to_repeat
+  - accounts_to_pause
+  - next_week_priority
+
+env_required:
+  - DATABASE_URL
+  - TELEGRAM_BOT_TOKEN
+  - TELEGRAM_ADMIN_CHAT_ID
+
+env_optional:
+  - TWENTY_API_URL
+  - METABASE_URL
+  - PLANE_API_URL
+  - ACTIVEPIECES_API_URL
+  - APIFY_API_TOKEN
+  - GITHUB_MONITOR_ENABLED
+
+scripts:
+  health: python scripts/health_check.py
+  health_persist: python scripts/health_check.py --persist
+  founder_data: python scripts/health_check.py founder-data
+  weekly_data: python scripts/health_check.py weekly-review
+  founder_report: python scripts/send_telegram_report.py founder-daily
+  founder_report_dry: python scripts/send_telegram_report.py founder-daily --dry-run
+  bundle_verify: python scripts/health_check.py bundle
+
+github_monitoring:
+  status: optional
+  method: git log -1 when .git present
+  note: Set GITHUB_MONITOR_ENABLED=false to disable; CI webhook optional later
+
+acceptance:
+  - health_check.py structured JSON all services
+  - founder-daily report 8PM format
+  - failed services clearly marked
+  - weekly review command works
+  - launch-checklist Phase 8 updated
+
+not_in_scope:
+  - Agent 6
+  - Custom Metabase app
+  - n8n

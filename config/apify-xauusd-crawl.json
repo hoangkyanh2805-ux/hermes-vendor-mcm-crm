@@ -1,0 +1,57 @@
+{
+  "actor_id": "EvFXOhwR6wsOWmdSK",
+  "countries": [
+    "Canada",
+    "Italy",
+    "Germany",
+    "United Arab Emirates",
+    "France",
+    "Saudi Arabia",
+    "United Kingdom",
+    "Poland"
+  ],
+  "hashtags": ["#xauusd", "#gold"],
+  "maxItems": 500,
+  "dateRange": {
+    "lastDays": 30
+  },
+  "queries": [
+    "#xauusd Canada",
+    "#gold Canada",
+    "XAUUSD trader Canada",
+    "gold trading Canada",
+    "#xauusd Italy",
+    "#gold Italy",
+    "XAUUSD trader Italy",
+    "gold trading Italy",
+    "#xauusd Germany",
+    "#gold Germany",
+    "XAUUSD trader Germany",
+    "gold trading Germany",
+    "#xauusd UAE",
+    "#gold UAE",
+    "XAUUSD trader Dubai",
+    "gold trading UAE",
+    "#xauusd France",
+    "#gold France",
+    "XAUUSD trader France",
+    "gold trading France",
+    "#xauusd Saudi Arabia",
+    "#gold Saudi Arabia",
+    "XAUUSD trader KSA",
+    "gold trading Saudi Arabia",
+    "#xauusd UK",
+    "#gold UK",
+    "XAUUSD trader UK",
+    "gold trading UK",
+    "#xauusd Poland",
+    "#gold Poland",
+    "XAUUSD trader Poland",
+    "gold trading Poland"
+  ],
+  "test_query": {
+    "country": "Canada",
+    "hashtag": "#xauusd",
+    "searchTerms": ["#xauusd Canada"]
+  }
+}

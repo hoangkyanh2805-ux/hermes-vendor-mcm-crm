@@ -1,0 +1,133 @@
+# Agent 1 — Capture / Telegram Attribution
+# MCM Vendor — Hermes XAUUSD Growth OS v2
+# Phase 1: X → BioLink/UTM → Telegram deep link → Supabase
+
+name: agent1-capture
+version: "2.0"
+phase: phase1
+description: |
+  Capture layer for Telegram /start joins with X/BioLink/UTM attribution.
+  Supabase is source of truth. No Google Sheet writes.
+
+triggers:
+  - type: telegram_webhook
+    event: message
+    filter: "/start"
+  - type: cron
+    schedule: null  # event-driven only
+  - type: cli
+    command: python scripts/sync_to_supabase.py capture-start
+
+# Deep link format (BioLink / UTM landing → Telegram)
+# https://t.me/hermes7979_bot?start=src_{x_account_id}_{country}_{campaign_id}[_{content_id}]
+# Example: https://t.me/hermes7979_bot?start=src_xacc_uae_001_uae_goldhook_20260624
+
+inputs:
+  telegram_user_id: integer
+  telegram_username: string optional
+  start_payload: string optional  # text after /start
+  raw_update: object optional     # full Telegram update JSON
+
+outputs:
+  telegram_join_id: uuid
+  lead_id: uuid
+  parse_status: enum
+  welcome_sent: boolean
+  admin_notified: boolean
+
+workflow:
+  - step: parse_payload
+    action: |
+      Parse /start payload into source_account, country_target, campaign_id, content_id.
+      Script: scripts/sync_to_supabase.py → parse_start_payload()
+    on_missing: set country_target=unknown, parse_status=missing_payload
+
+  - step: validate_references
+    action: |
+      Validate x_account and campaign exist in Supabase.
+      Validate country against known target countries.
+    failure_cases:
+      unknown_source: log + continue with attribution fields preserved
+      invalid_campaign: clear campaign_id, parse_status=invalid
+      unknown_country: parse_status=unknown_country, still capture lead
+
+  - step: upsert_supabase
+    action: |
+      Create or update telegram_joins and leads.
+      Set stage = Telegram Joined (or New X Visitor if no payload).
+      Duplicate user → update existing row, is_duplicate=true.
+    script: scripts/sync_to_supabase.py → upsert_telegram_join()
+
+  - step: activity_log
+    action: |
+      DB triggers write activity_logs on insert/update.
+      Script writes capture_start success/failure rows.
+
+  - step: welcome_message
+    action: Send Telegram welcome to user
+    script: scripts/send_telegram_report.py → send_welcome_message()
+    on_failure: log activity_logs status=failure, do not rollback DB
+
+  - step: admin_notify
+    action: Send source summary to TELEGRAM_ADMIN_CHAT_ID
+    script: scripts/send_telegram_report.py → send_admin_join_alert()
+    on_failure: log activity_logs status=failure, do not rollback DB
+
+parse_status_values:
+  ok: fully attributed join
+  missing_payload: /start with no ref param → source unknown
+  invalid: campaign id not in DB
+  unknown_source: x_account not in DB
+  unknown_country: country not in target list
+  error: database or unhandled failure
+
+stage_rules:
+  missing_payload: New X Visitor
+  all_other_joins: Telegram Joined
+
+edge_cases:
+  missing_start_payload:
+    behavior: create lead with country=unknown, stage=New X Visitor
+  duplicate_telegram_user:
+    behavior: update existing lead/join, is_duplicate=true, no spam rows
+  invalid_campaign_id:
+    behavior: capture lead, campaign_id=null, parse_status=invalid
+  unknown_x_account:
+    behavior: capture lead, parse_status=unknown_source
+  unknown_country:
+    behavior: capture lead, parse_status=unknown_country
+  database_error:
+    behavior: log activity_logs failure, return error to webhook
+  telegram_send_failure:
+    behavior: log activity_logs failure, DB write retained
+
+env_required:
+  - DATABASE_URL
+  - TELEGRAM_BOT_TOKEN
+  - TELEGRAM_ADMIN_CHAT_ID
+
+env_optional:
+  - SUPABASE_URL
+  - HERMES_WEBHOOK_SECRET
+
+scripts:
+  capture: scripts/sync_to_supabase.py capture-start
+  test_join: scripts/sync_to_supabase.py test-join
+  test_admin: scripts/send_telegram_report.py test-admin
+  health: scripts/sync_to_supabase.py health
+
+acceptance:
+  - Valid /start payload creates telegram_joins row
+  - Missing payload creates row with source=unknown
+  - Duplicate join updates existing record
+  - Admin receives source summary
+  - activity_logs records success and failure paths
+
+not_in_scope:
+  - Twenty CRM sync (Phase 2)
+  - Google Sheet writes
+  - EspoCRM
+
+legacy_note: |
+  Replaces Sheet-first capture from legacy agent1. EspoCRM and Google Docs MCP
+  are not used in this flow.

@@ -1,0 +1,102 @@
+{
+  "version": "1.0",
+  "platform": "activepieces",
+  "principle": "Activepieces is a bridge only. Supabase remains source of truth.",
+  "failure_logging": {
+    "table": "activity_logs",
+    "actor": "activepieces",
+    "source": "automation",
+    "required_fields": ["entity_type", "action", "status", "message", "error_detail", "payload"]
+  },
+  "flows": [
+    {
+      "id": "flow_01",
+      "name": "New Telegram Join",
+      "trigger": {
+        "type": "supabase_webhook",
+        "table": "telegram_joins",
+        "event": "INSERT",
+        "alternative": "hermes_agent1_http_webhook"
+      },
+      "actions": [
+        "twenty_sync_lead",
+        "telegram_admin_notify"
+      ],
+      "webhook_env": "ACTIVEPIECES_WEBHOOK_FLOW1"
+    },
+    {
+      "id": "flow_02",
+      "name": "Stage Changed",
+      "trigger": {
+        "type": "supabase_webhook",
+        "table": "crm_stage_events",
+        "event": "INSERT"
+      },
+      "actions": [
+        "twenty_update_stage",
+        "telegram_followup_or_admin"
+      ],
+      "webhook_env": "ACTIVEPIECES_WEBHOOK_FLOW2"
+    },
+    {
+      "id": "flow_03",
+      "name": "High Potential Apify Post",
+      "trigger": {
+        "type": "supabase_webhook",
+        "table": "apify_posts",
+        "event": "INSERT",
+        "filter": "lead_potential = 'High'"
+      },
+      "actions": [
+        "create_plane_task"
+      ],
+      "webhook_env": "ACTIVEPIECES_WEBHOOK_FLOW3"
+    },
+    {
+      "id": "flow_04",
+      "name": "Daily KPI Ready",
+      "trigger": {
+        "type": "cron",
+        "schedule": "0 21 * * *",
+        "alternative": "supabase_webhook daily_kpis INSERT"
+      },
+      "actions": [
+        "founder_telegram_report"
+      ],
+      "webhook_env": "ACTIVEPIECES_WEBHOOK_FLOW4"
+    },
+    {
+      "id": "flow_05",
+      "name": "Vendor Task Overdue",
+      "trigger": {
+        "type": "cron",
+        "schedule": "0 * * * *",
+        "query": "vendor_tasks overdue"
+      },
+      "actions": [
+        "telegram_admin_alert"
+      ],
+      "webhook_env": "ACTIVEPIECES_WEBHOOK_FLOW5"
+    },
+    {
+      "id": "flow_06",
+      "name": "Renewal Risk",
+      "trigger": {
+        "type": "cron",
+        "schedule": "0 8 * * *",
+        "condition": "member inactive > 3 days"
+      },
+      "actions": [
+        "update_lead_stage_renewal_risk",
+        "telegram_nurture_message"
+      ],
+      "webhook_env": "ACTIVEPIECES_WEBHOOK_FLOW6"
+    }
+  ],
+  "script_endpoints": {
+    "twenty_sync": "python scripts/sync_to_twenty.py sync-lead --lead-id {{lead_id}}",
+    "plane_task": "python scripts/create_plane_task.py from-apify --local-only --limit 1",
+    "founder_report": "python scripts/send_telegram_report.py country-report",
+    "log_failure": "python scripts/activepieces_webhook_test.py log-failure --flow {{flow_id}}"
+  }
+}

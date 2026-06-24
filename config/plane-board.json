@@ -1,0 +1,20 @@
+{
+  "board_name": "MCM Vendor Content Board",
+  "team": "Tuấn — vendor/content production",
+  "columns": [
+    { "name": "Backlog", "vendor_status": "backlog", "plane_state_id": "" },
+    { "name": "Ready to Post", "vendor_status": "ready_to_post", "plane_state_id": "" },
+    { "name": "Assigned", "vendor_status": "assigned", "plane_state_id": "" },
+    { "name": "Posted", "vendor_status": "posted", "plane_state_id": "" },
+    { "name": "Need Fix", "vendor_status": "need_fix", "plane_state_id": "" },
+    { "name": "Winning Content", "vendor_status": "winning", "plane_state_id": "" },
+    { "name": "Archived", "vendor_status": "archived", "plane_state_id": "" }
+  ],
+  "default_status": "backlog",
+  "api_paths": {
+    "work_items": "/api/v1/workspaces/{workspace}/projects/{project_id}/work-items/",
+    "issues_legacy": "/api/v1/workspaces/{workspace}/projects/{project_id}/issues/",
+    "states": "/api/v1/workspaces/{workspace}/projects/{project_id}/states/"
+  },
+  "setup_note": "Fill plane_state_id per column from Plane Project → States settings, or set PLANE_STATE_BACKLOG etc. in .env"
+}

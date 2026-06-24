@@ -1,0 +1,15 @@
+# LEGACY — EspoCRM Sync (DO NOT EXTEND)
+# MCM Vendor — Hermes XAUUSD Growth OS v1
+#
+# Status: DEPRECATED
+# Replacement: skills/agent4-twenty-crm-sync.yaml
+# ADR: docs/adr/002-crm-twenty-over-espocrm.md
+#
+# EspoCRM sync retained for reference only during migration.
+# New development must use Twenty CRM via scripts/sync_to_twenty.py.
+# Supabase remains source of truth in v2.
+
+name: agent4-crm-sync-legacy
+version: "1.0-legacy"
+status: deprecated
+replacement: agent4-twenty-crm-sync

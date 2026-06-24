@@ -1,0 +1,32 @@
+Classify this X/Twitter post about XAUUSD/gold trading into exactly ONE category.
+
+Categories:
+- signal: trade calls, entries, TP/SL, live setups
+- proof: profit screenshots, win rates, results, testimonials
+- education: tutorials, analysis explainers, how-to content
+- promo: VIP/channel/group promotion, affiliate links, "DM me"
+- noise: off-topic, spam, irrelevant, low-value engagement bait
+
+Also assign lead_potential:
+- High: strong engagement + actionable trading value for our audience
+- Medium: useful but not immediate conversion potential
+- Low: weak fit or mostly promotional
+- (if noise category → lead_potential should be Low)
+
+Post text:
+---
+{{post_text}}
+---
+
+Author: @{{author_handle}} ({{author_followers}} followers)
+Country target: {{country_target}}
+Hashtag context: {{hashtag}}
+
+Respond in JSON only:
+{
+  "category": "signal|proof|education|promo|noise",
+  "lead_potential": "High|Medium|Low",
+  "content_angle": "short label e.g. breakout setup, Fed impact",
+  "action": "rewrite|comment|seed|skip",
+  "reason": "one sentence"
+}

@@ -1,0 +1,80 @@
+# Agent 2 — Onboard / D1–D7 Nurture
+# MCM Vendor — Hermes XAUUSD Growth OS v2
+# MVP: documented SOP; Hermes prompts + manual Telegram for nurture sequences
+
+name: agent2-onboard
+version: "2.0"
+phase: mvp-documented
+description: |
+  Onboarding nurture for leads after Telegram capture (D1–D7).
+  Supabase stage transitions drive CRM sync (Agent 4).
+  Not a separate Hermes instance — skill file only.
+
+triggers:
+  - type: cron
+    schedule: "0 10 * * *"
+    task: daily_nurture_check
+  - type: event
+    event: crm_stage_changed
+    filter: "stage in (Telegram Joined, Warm Member)"
+  - type: cli
+    command: null  # manual via Hermes chat + sop-ops D1-D7 scripts
+
+inputs:
+  lead_id: uuid
+  telegram_user_id: integer
+  current_stage: string
+  country_target: string optional
+  days_since_join: integer optional
+
+outputs:
+  nurture_message_sent: boolean
+  stage_advanced: boolean optional
+  activity_log_id: uuid optional
+
+workflow:
+  - step: select_cohort
+    action: |
+      Query leads in "Telegram Joined" or "Warm Member" where last_contact > 24h
+      or D-day matches nurture script (D1 welcome recap, D3 value, D5 signal teaser, D7 VIP offer).
+  - step: send_nurture
+    action: |
+      Send Telegram message via bot API (personalized by country + hook interest).
+      Log to activity_logs action=nurture_send.
+  - step: advance_stage
+    action: |
+      If engagement signal (reply, button click) → advance to Warm Member / Signal Interested.
+      Insert crm_stage_events → triggers Twenty sync + Activepieces flow 2.
+
+stages:
+  telegram_joined:
+    d1: "Welcome recap + what to expect from XAUUSD channel"
+    d3: "Top hook from winning content this week"
+    d5: "Signal interest qualifier — reply YES for setups"
+  warm_member:
+    d7: "VIP / paid tier intro (if applicable)"
+
+tables:
+  - leads
+  - crm_stage_events
+  - crm_stages
+  - activity_logs
+  - content_performance
+
+env_required:
+  - DATABASE_URL
+  - TELEGRAM_BOT_TOKEN
+
+not_in_scope:
+  - Separate Hermes deployment
+  - Automated payment collection (manual founder decision)
+  - EspoCRM
+
+acceptance_mvp:
+  - D1-D7 scripts documented in docs/sop-ops.md
+  - Stage transitions writable via Supabase / Twenty
+  - activity_logs on nurture actions
+
+scripts:
+  manual: "Founder/Ops sends via Telegram; log via sync_to_supabase or CRM tools"
+  verify: "SELECT * FROM v_crm_stage_funnel"

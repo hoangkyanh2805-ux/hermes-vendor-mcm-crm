@@ -1,0 +1,36 @@
+{
+  "pipeline": "Hermes XAUUSD Funnel",
+  "description": "Twenty CRM pipeline mirrors Supabase crm_stages. Supabase is source of truth.",
+  "stages": [
+    "New X Visitor",
+    "Telegram Joined",
+    "Warm Member",
+    "Signal Interested",
+    "Trial / Consult",
+    "Paid / VIP",
+    "Renewal Risk",
+    "Churned"
+  ],
+  "twenty_stage_map": {
+    "New X Visitor": "NEW_X_VISITOR",
+    "Telegram Joined": "TELEGRAM_JOINED",
+    "Warm Member": "WARM_MEMBER",
+    "Signal Interested": "SIGNAL_INTERESTED",
+    "Trial / Consult": "TRIAL_CONSULT",
+    "Paid / VIP": "PAID_VIP",
+    "Renewal Risk": "RENEWAL_RISK",
+    "Churned": "CHURNED"
+  },
+  "sync_rules": {
+    "lead_created": "create Person + Opportunity in Twenty",
+    "stage_changed": "update Opportunity stage + log crm_stage_events",
+    "telegram_joined": "stage = Telegram Joined",
+    "member_engaged": "stage = Warm Member",
+    "signal_interest": "stage = Signal Interested",
+    "admin_consult": "stage = Trial / Consult",
+    "paid_flag_true": "stage = Paid / VIP",
+    "inactive_days_gt_threshold": "stage = Renewal Risk",
+    "left_group_or_long_inactive": "stage = Churned"
+  },
+  "setup_note": "Create matching Opportunity stages in Twenty Settings → Objects → Opportunity → stage field, or update twenty_stage_map to match your workspace enum values."
+}

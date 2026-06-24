@@ -1,0 +1,13 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: hermes
+      POSTGRES_PASSWORD: hermes_dev
+      POSTGRES_DB: hermes_growth
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./db/seed_stages.sql:/docker-entrypoint-initdb.d/02-seed.sql
+      - ./db/views.sql:/docker-entrypoint-initdb.d/03-views.sql

@@ -1,0 +1,113 @@
+# Agent 3 — Daily Loop / Apify Intelligence
+# MCM Vendor — Hermes XAUUSD Growth OS v2 — Phase 4
+
+name: agent3-daily-loop
+version: "2.0"
+phase: phase4
+description: |
+  Daily operating loop: Apify country crawl, classify posts, country intelligence,
+  affiliate checklist, coaching, founder/affiliate reports.
+  Uses last30days-skill pattern for XAUUSD/gold research input layer.
+
+integrations:
+  apify_actor: EvFXOhwR6wsOWmdSK
+  last30days_skill: optional enrichment via ANTHROPIC_API_KEY + prompts/
+  source_of_truth: Supabase (apify_posts, country_intelligence)
+
+cron:
+  - schedule: "0 6 * * *"
+    task: apify_country_crawl
+    command: python scripts/run_apify_crawl.py run
+    note: Full multi-country crawl (or test-canada in dev)
+
+  - schedule: "0 7 * * *"
+    task: affiliate_vendor_checklist
+    command: null  # Phase 2+ onboard — prompts/checklist.txt
+    status: planned
+
+  - schedule: "0 14 * * *"
+    task: coaching_if_performance_drops
+    command: null  # prompts/coaching.txt when metrics drop
+    status: planned
+
+  - schedule: "0 21 * * *"
+    task: affiliate_and_founder_report
+    command: python scripts/send_telegram_report.py country-report
+    note: Daily intel + founder rollup (Phase 8 expands)
+
+workflow_apify_crawl:
+  - step: run_actor
+    script: scripts/run_apify_crawl.py
+    config: config/apify-xauusd-crawl.json
+    env: [APIFY_API_TOKEN, APIFY_X_ACTOR_ID]
+
+  - step: normalize
+    script: scripts/normalize_apify_dataset.py
+    output_table: apify_posts
+    fields:
+      - platform
+      - query
+      - country_target
+      - hashtag
+      - post_url
+      - post_text
+      - author_handle
+      - engagement_score
+      - category
+      - lead_potential
+      - hook_extracted
+      - content_angle
+      - action
+
+  - step: classify
+    prompt: prompts/apify-classify-post.txt
+    categories: [signal, proof, education, promo, noise]
+    fallback: rule-based in normalize_apify_dataset.py
+
+  - step: extract_hooks
+    prompt: prompts/apify-hook-extract.txt
+    fallback: rule-based first-sentence extract
+
+  - step: country_intelligence
+    table: country_intelligence
+    prompt: prompts/country-opportunity-report.txt
+
+  - step: notify_admin
+    script: scripts/send_telegram_report.py country-report
+
+  - step: health_log
+    table: system_health_logs
+    service_name: apify_crawl
+
+target_countries:
+  - Canada
+  - Italy
+  - Germany
+  - United Arab Emirates
+  - France
+  - Saudi Arabia
+  - United Kingdom
+  - Poland
+
+target_hashtags:
+  - "#xauusd"
+  - "#gold"
+
+scripts:
+  health: python scripts/run_apify_crawl.py health
+  test_canada: python scripts/run_apify_crawl.py test-canada --report
+  normalize_sample: python scripts/normalize_apify_dataset.py --sample --dry-run
+  country_report: python scripts/send_telegram_report.py country-report --dry-run
+
+acceptance:
+  - Test crawl Canada + #xauusd (sample mode OK)
+  - Normalize into apify_posts
+  - Classify >= 20 sample posts
+  - Extract >= 5 hooks
+  - country_intelligence row inserted
+  - Telegram admin report
+  - system_health_logs entry
+
+not_in_scope:
+  - Plane task auto-create (Phase 6)
+  - n8n automation

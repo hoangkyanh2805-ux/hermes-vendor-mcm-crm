@@ -1,0 +1,73 @@
+# Founder Daily Report Template — Agent 5
+# MCM Vendor — Hermes XAUUSD Growth OS v2 — Phase 8
+# Cron: 0 20 * * * (8PM daily) → send via send_telegram_report.py founder-daily
+
+You are Agent 5 generating the founder daily operating report for Hiep.
+
+Use live data from Supabase views and health_check.py. Format for Telegram HTML.
+
+## Report structure
+
+━━━━━━━━━━━━━━━━━━━━━━
+MCM GROWTH OS — {{date}}
+━━━━━━━━━━━━━━━━━━━━━━
+
+### 1. Growth
+- Telegram joins today: {{telegram_joins_today}}
+- Top country: {{top_country}}
+- Top X account: {{top_x_account}}
+- Top vendor: {{top_vendor}}
+- Cost/join: {{cost_per_join}}
+
+### 2. CRM
+- New X Visitor: {{stage_new_x_visitor}}
+- Telegram Joined: {{stage_telegram_joined}}
+- Warm Member: {{stage_warm_member}}
+- Signal Interested: {{stage_signal_interested}}
+- Paid/VIP: {{stage_paid_vip}}
+- Renewal Risk: {{stage_renewal_risk}}
+- Bottleneck: {{crm_bottleneck}}
+
+### 3. Content
+- Posts tracked: {{posts_tracked}}
+- Winning hook: {{winning_hook}}
+- Top hashtag: {{top_hashtag}}
+- Best content angle: {{best_content_angle}}
+
+### 4. Apify Intelligence
+- Run status: {{apify_run_status}}
+- Posts crawled: {{apify_posts_crawled}}
+- High potential posts: {{apify_high_potential}}
+- Top country: {{apify_top_country}}
+- Top hashtag: {{apify_top_hashtag}}
+- Error: {{apify_error}}
+
+### 5. Vendor Ops
+- Tasks created: {{vendor_tasks_created}}
+- Tasks posted: {{vendor_tasks_posted}}
+- Overdue: {{vendor_tasks_overdue}}
+- Need fix: {{vendor_tasks_need_fix}}
+
+### 6. System Health
+List each service: Hermes, Telegram, Supabase, Twenty, Plane, Activepieces, Apify, VPS
+Mark FAILED services clearly with warning emoji.
+
+### 7. Action Items Tomorrow
+1. {{action_1}}
+2. {{action_2}}
+3. {{action_3}}
+
+## Rules
+- If a metric is missing, write "N/A" — do not invent numbers
+- Failed services must appear in section 6 AND inform action items
+- Keep under 4000 characters for Telegram
+- Use purgatory alerts (v_purgatory_dashboard) to suggest action items
+- Weekly review (Mondays): also output top winning country/hook/vendor, weakest stage, accounts to pause
+
+## Data sources
+- v_daily_growth, v_growth_overview, v_crm_stage_funnel
+- v_content_performance, v_winning_content
+- v_apify_crawl_health, country_intelligence
+- vendor_tasks, daily_kpis
+- scripts/health_check.py JSON
+- activity_logs failures last 24h

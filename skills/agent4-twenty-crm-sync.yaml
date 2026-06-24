@@ -1,0 +1,86 @@
+# Agent 4 — Twenty CRM Sync
+# MCM Vendor — Hermes XAUUSD Growth OS v2
+# Phase 2: Supabase → Twenty pipeline visibility
+
+name: agent4-twenty-crm-sync
+version: "2.0"
+phase: phase2
+description: |
+  Sync leads and stage changes from Supabase (source of truth) to Twenty CRM.
+  Twenty is for relationship/stage visibility only — never write back to Supabase.
+
+triggers:
+  - type: supabase_event
+    table: leads
+    events: [insert, update]
+  - type: cron
+    schedule: "*/15 * * * *"  # catch-up sync every 15 min
+  - type: cli
+    command: python scripts/sync_to_twenty.py sync-lead
+
+inputs:
+  lead_id: uuid optional
+  telegram_user_id: integer optional
+
+outputs:
+  twenty_person_id: string
+  twenty_opportunity_id: string
+  twenty_stage: string
+  crm_stage_event_id: uuid
+
+workflow:
+  - step: fetch_lead
+    action: Load lead from Supabase by id or telegram_user_id
+    script: scripts/sync_to_twenty.py
+
+  - step: apply_stage_rules
+    action: |
+      paid_flag → Paid / VIP
+      inactive_days > threshold → Renewal Risk
+      member engaged → Warm Member (via Supabase update from Agent 2/3)
+    note: Stage changes originate in Supabase; Twenty mirrors them
+
+  - step: sync_person
+    action: Create Person in Twenty if twenty_person_id missing
+    api: POST {TWENTY_API_URL}/rest/people
+
+  - step: sync_opportunity
+    action: Create or PATCH Opportunity stage
+    api: POST/PATCH {TWENTY_API_URL}/rest/opportunities
+    config: config/twenty-pipeline.json
+
+  - step: audit
+    action: |
+      Write crm_stage_events (twenty_synced true/false)
+      Write activity_logs on success/failure
+    tables: [crm_stage_events, activity_logs]
+
+stage_sync_rules:
+  lead_created: create Person + Opportunity
+  Telegram Joined: opportunity stage = TELEGRAM_JOINED
+  Warm Member: stage = WARM_MEMBER
+  Signal Interested: stage = SIGNAL_INTERESTED
+  Trial / Consult: stage = TRIAL_CONSULT
+  paid_flag_true: stage = PAID_VIP
+  inactive_gt_N_days: stage = RENEWAL_RISK
+  left_group: stage = CHURNED
+
+env_required:
+  - DATABASE_URL
+  - TWENTY_API_URL
+  - TWENTY_API_KEY
+
+scripts:
+  health: python scripts/sync_to_twenty.py health
+  sync: python scripts/sync_to_twenty.py sync-lead --telegram-user-id {id}
+  test: python scripts/sync_to_twenty.py test-sync --dry-run
+
+acceptance:
+  - One fake lead syncs Supabase → Twenty
+  - Stage change in Supabase updates Twenty opportunity
+  - crm_stage_events logged
+  - Failed Twenty API → activity_logs failure
+  - EspoCRM not required for core flow
+
+legacy_note: |
+  Replaces skills/agent4-crm-sync.yaml (EspoCRM). Do not extend EspoCRM path.

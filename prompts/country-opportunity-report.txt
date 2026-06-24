@@ -1,0 +1,27 @@
+Generate a daily COUNTRY OPPORTUNITY REPORT for the Hermes XAUUSD Growth OS.
+
+Date: {{report_date}}
+Country: {{country_target}}
+
+Aggregated stats:
+- Posts crawled: {{posts_crawled}}
+- High potential: {{high_potential_count}}
+- Top hashtag: {{top_hashtag}}
+- Top hook: {{top_hook}}
+- Top author: {{top_author}}
+- Top content angle: {{top_content_angle}}
+
+Sample high-potential posts:
+{{high_potential_samples}}
+
+Noise/spam signals:
+{{noise_warning}}
+
+Output a concise Telegram-friendly report (HTML allowed) with sections:
+1. Top opportunity (country, hashtag, hook)
+2. Posts worth rewriting (max 3 bullets with post_url)
+3. Posts worth commenting/seeding (max 3)
+4. Vendor task suggestions for team Tuấn (max 3 actionable tasks)
+5. Spam/noise warning if needed
+
+Keep under 4000 characters.
