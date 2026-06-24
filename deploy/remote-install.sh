@@ -19,11 +19,19 @@ fi
 
 grep -q '8.8.8.8' /etc/resolv.conf 2>/dev/null || echo 'nameserver 8.8.8.8' >> /etc/resolv.conf
 
+if [ -f "$REMOTE_DIR/.env" ]; then
+  cp -a "$REMOTE_DIR/.env" /tmp/hermes.env.bak
+fi
+
 if [ -d "$REMOTE_DIR/.git" ]; then
   cd "$REMOTE_DIR" && git pull --ff-only
 else
   rm -rf "$REMOTE_DIR"
   git clone "$REPO" "$REMOTE_DIR"
+fi
+
+if [ -f /tmp/hermes.env.bak ]; then
+  cp -a /tmp/hermes.env.bak "$REMOTE_DIR/.env"
 fi
 
 if [ ! -f "$REMOTE_DIR/.env" ]; then
