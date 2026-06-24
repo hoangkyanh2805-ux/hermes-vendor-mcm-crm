@@ -299,3 +299,4 @@ python scripts/e2e_launch_test.py
 - Bundle: [bundle-manifest.md](bundle-manifest.md)
 - Launch: [launch-checklist.md](launch-checklist.md)
 - Rollback: [rollback-plan.md](rollback-plan.md)
+- **Go-live tiếp theo:** [go-live-next-steps.md](go-live-next-steps.md)
