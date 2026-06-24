@@ -266,6 +266,21 @@ python scripts/e2e_launch_test.py
 
 ---
 
+## Production VPS — agent.tiemhoatmon.com (123host)
+
+**Chi tiết VNC / paste lệnh:** [deploy/VNC-INSTALL.md](../deploy/VNC-INSTALL.md)
+
+| Mục | Giá trị |
+| --- | ------- |
+| IP | `103.97.126.28` |
+| SSH | `ssh -p 2018 root@103.97.126.28` |
+| Domain | `https://agent.tiemhoatmon.com` |
+| Install 1-liner (VNC clipboard) | `curl -fsSL https://raw.githubusercontent.com/hoangkyanh2805-ux/hermes-vendor-mcm-crm/master/deploy/remote-install.sh \| bash` |
+
+**Sau install:** Metabase → Section [deploy-vps-metabase.md](deploy-vps-metabase.md) Phần D.
+
+---
+
 ## Agent 5 — Sau mỗi phase (packaging)
 
 1. Chạy acceptance test của phase

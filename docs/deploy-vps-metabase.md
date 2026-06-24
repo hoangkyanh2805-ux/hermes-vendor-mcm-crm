@@ -3,7 +3,9 @@
 Hướng dẫn go-live: **Telegram `/start` tự động** + **Metabase founder dashboard**.
 
 Project Supabase: `tpkuivbcaeenavwnjhit`  
-Bot: `@hermes_vendor_mcm_crm_bot`
+Bot: `@hermes_vendor_mcm_crm_bot`  
+**Production domain:** `https://agent.tiemhoatmon.com`  
+**VNC paste lệnh (123host):** [deploy/VNC-INSTALL.md](../deploy/VNC-INSTALL.md)
 
 ---
 

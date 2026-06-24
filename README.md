@@ -95,7 +95,9 @@ Load all five YAML files into one Hermes instance:
 | Bundle verify | `python scripts/health_check.py bundle` |
 
 Full runbook: [`docs/runbook.md`](docs/runbook.md)  
-**VPS deploy (webhook + Metabase):** [`docs/deploy-vps-metabase.md`](docs/deploy-vps-metabase.md)
+**VPS deploy (webhook + Metabase):** [`docs/deploy-vps-metabase.md`](docs/deploy-vps-metabase.md)  
+**VNC 123host (paste lệnh):** [`deploy/VNC-INSTALL.md`](deploy/VNC-INSTALL.md)  
+**Metabase setup:** [`docs/metabase-setup-quick.md`](docs/metabase-setup-quick.md)
 
 ---
 
