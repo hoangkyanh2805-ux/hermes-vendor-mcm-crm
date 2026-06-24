@@ -1,6 +1,8 @@
 services:
+  # Local dev Postgres (optional — production uses Supabase)
   postgres:
     image: postgres:15-alpine
+    profiles: ["local-db"]
     environment:
       POSTGRES_USER: hermes
       POSTGRES_PASSWORD: hermes_dev
@@ -11,3 +13,32 @@ services:
       - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ./db/seed_stages.sql:/docker-entrypoint-initdb.d/02-seed.sql
       - ./db/views.sql:/docker-entrypoint-initdb.d/03-views.sql
+
+  # Agent 1 — Telegram webhook (Hermes capture bridge)
+  hermes-webhook:
+    build:
+      context: .
+      dockerfile: Dockerfile.webhook
+    env_file: .env
+    ports:
+      - "${WEBHOOK_PORT:-8080}:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Founder dashboard — connect to Supabase in Metabase UI
+  metabase:
+    image: metabase/metabase:v0.49.15
+    ports:
+      - "${METABASE_PORT:-3000}:3000"
+    environment:
+      MB_JETTY_HOST: 0.0.0.0
+    volumes:
+      - metabase-data:/metabase-data
+    restart: unless-stopped
+
+volumes:
+  metabase-data:

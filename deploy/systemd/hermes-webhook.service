@@ -1,0 +1,15 @@
+[Unit]
+Description=Hermes Telegram Webhook (Agent 1 Capture)
+After=network.target
+
+[Service]
+Type=simple
+User=hermes
+WorkingDirectory=/opt/hermes-vendor-mcm-crm
+EnvironmentFile=/opt/hermes-vendor-mcm-crm/.env
+ExecStart=/opt/hermes-vendor-mcm-crm/.venv/bin/gunicorn -w 2 -b 127.0.0.1:8080 --timeout 120 telegram_webhook_server:app --chdir /opt/hermes-vendor-mcm-crm/scripts
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

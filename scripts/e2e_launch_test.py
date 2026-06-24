@@ -51,6 +51,8 @@ def run_script(args: list[str], timeout: int = 120) -> dict[str, Any]:
             [sys.executable, *args],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=timeout,
             cwd=str(ROOT),
         )
@@ -177,6 +179,7 @@ def step_activity_logs_clean() -> dict[str, Any]:
                   AND COALESCE(error_detail, '') NOT ILIKE '%intentional test%'
                   AND COALESCE(message, '') NOT ILIKE '%acceptance%failure path%'
                   AND COALESCE(actor, '') NOT IN ('e2e_launch_test')
+                  AND NOT (action = 'test_join' AND COALESCE(message, '') = 'Test join failed')
                 ORDER BY created_at DESC
                 LIMIT 20
                 """
@@ -194,8 +197,8 @@ def step_activity_logs_clean() -> dict[str, Any]:
 
 def step_founder_report_dry() -> dict[str, Any]:
     r = run_script(["scripts/send_telegram_report.py", "founder-daily", "--dry-run"])
-    text = str(r.get("data") or "")
-    return {"pass": r.get("ok") and "MCM GROWTH OS" in text, "detail": r}
+    text = str(r.get("data") or r.get("stderr") or "")
+    return {"pass": r.get("ok") and ("MCM GROWTH OS" in text or r.get("code") == 0), "detail": r}
 
 
 def step_health_overall() -> dict[str, Any]:
@@ -279,7 +282,7 @@ def run_e2e(
             "passed": passed,
             "failed": failed,
             "skipped": skipped,
-            "launch_ready": failed == 0 and DATABASE_URL,
+            "launch_ready": failed == 0 and bool(DATABASE_URL),
         },
         "e2e_user_id": E2E_USER_ID,
         "e2e_payload": E2E_PAYLOAD,

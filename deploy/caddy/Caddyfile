@@ -1,0 +1,21 @@
+# Replace YOUR_DOMAIN with your VPS domain (e.g. agent.tiemhoatmon.com)
+agent.tiemhoatmon.com {
+    encode gzip
+
+    handle /webhook/* {
+        reverse_proxy 127.0.0.1:8080
+    }
+
+    handle /health {
+        reverse_proxy 127.0.0.1:8080
+    }
+
+    handle /metabase/* {
+        uri strip_prefix /metabase
+        reverse_proxy 127.0.0.1:3000
+    }
+
+    handle {
+        respond "Hermes Growth OS" 200
+    }
+}

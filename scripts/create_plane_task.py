@@ -511,7 +511,7 @@ def cmd_test() -> int:
         source_post_url="https://x.com/hermes_gold_uae/status/demo",
         x_account_id="xacc_uae_001",
         campaign_id="goldhook_20260624",
-        content_id="plane_test_001",
+        content_id="hook001",
         deadline=(date.today() + timedelta(days=1)).isoformat(),
         source="phase6_test",
     )

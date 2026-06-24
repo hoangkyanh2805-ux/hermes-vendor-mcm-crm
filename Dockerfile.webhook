@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY scripts/ ./scripts/
+COPY db/ ./db/
+COPY skills/ ./skills/
+COPY config/ ./config/
+
+ENV WEBHOOK_PORT=8080
+EXPOSE 8080
+
+WORKDIR /app/scripts
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:8080", "--timeout", "120", "telegram_webhook_server:app"]

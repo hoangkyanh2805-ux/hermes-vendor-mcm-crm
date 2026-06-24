@@ -136,8 +136,14 @@ def parse_start_payload(payload: Optional[str]) -> ParsedStartPayload:
         if not campaign_parts:
             continue
         if len(campaign_parts) >= 2:
-            campaign_id = "_".join(campaign_parts[:-1])
-            content_id = campaign_parts[-1]
+            last = campaign_parts[-1]
+            # Date suffix (e.g. 20260624) stays in campaign_id; content_id is hook001-style tokens
+            if last.isdigit() and len(last) >= 6:
+                campaign_id = "_".join(campaign_parts)
+                content_id = None
+            else:
+                campaign_id = "_".join(campaign_parts[:-1])
+                content_id = last
         else:
             campaign_id = "_".join(campaign_parts)
             content_id = None

@@ -94,7 +94,8 @@ Load all five YAML files into one Hermes instance:
 | E2E launch | `python scripts/e2e_launch_test.py` |
 | Bundle verify | `python scripts/health_check.py bundle` |
 
-Full runbook: [`docs/runbook.md`](docs/runbook.md)
+Full runbook: [`docs/runbook.md`](docs/runbook.md)  
+**VPS deploy (webhook + Metabase):** [`docs/deploy-vps-metabase.md`](docs/deploy-vps-metabase.md)
 
 ---
 

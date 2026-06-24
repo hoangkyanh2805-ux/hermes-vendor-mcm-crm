@@ -269,6 +269,10 @@ def cmd_founder_daily(dry_run: bool, weekly: bool) -> int:
         )
 
     if dry_run:
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
         print(text)
         return 0
 
